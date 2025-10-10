@@ -1,0 +1,9 @@
+streamlit
+geopandas
+pandas
+numpy
+shapely
+langchain
+chromadb
+mistral
+docker
