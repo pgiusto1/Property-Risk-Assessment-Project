@@ -1,9 +1,26 @@
-streamlit
-geopandas
-pandas
-numpy
-shapely
-langchain
-chromadb
-mistral
-docker
+# Core geospatial
+geopandas>=1.0.1
+shapely>=2.0
+pandas>=2.0
+numpy>=1.26
+
+# RAG / Vector store
+chromadb>=0.5.0
+sentence-transformers>=3.0.0
+
+# LLM / LangChain
+langchain>=0.2.0
+langchain-core>=0.2.0
+langchain-huggingface>=0.0.3
+huggingface-hub>=0.23.0
+
+# Streamlit app
+streamlit>=1.35.0
+
+# HTTP
+requests>=2.31.0
+
+# Notebook / EDA
+jupyter>=1.0.0
+matplotlib>=3.8.0
+seaborn>=0.13.0

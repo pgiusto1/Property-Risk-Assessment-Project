@@ -17,32 +17,31 @@ fvi["GEOID"] = fvi["GEOID"].astype(str)
 # Merge FVI into tract geometries
 merged = tracts.merge(fvi, on="GEOID")
 
-# --- Geocode with Geosupport Function 1B ---
+BOROUGH_NAMES = {
+    1: "Manhattan", 2: "Bronx", 3: "Brooklyn", 4: "Queens", 5: "Staten Island"
+}
+
+
+# --- Geocode via Nominatim (OpenStreetMap) ---
 def geocode_address_1b(address_no, street_name, borough_code):
-    url = "https://geoservice.planning.nyc.gov/geoservice/geoservice.svc/Function_1B"
-    params = {
-        "AddressNo": address_no,
-        "StreetName": street_name,
-        "Borough": borough_code,  # 1=Manhattan, 2=Bronx, 3=Brooklyn, 4=Queens, 5=Staten Island
-        "format": "json"
-    }
-
-    response = requests.get(url, params=params)
-
-    print(f" API URL: {response.url}")  # Debug
-    print("Raw Response Text:\n", response.text)
-
-    if response.status_code == 200:
-        try:
-            data = response.json()
-            lat = float(data["Latitude"])
-            lon = float(data["Longitude"])
-            return lat, lon
-        except (KeyError, ValueError) as e:
-            print("❌ Error parsing lat/lon from JSON:", e)
+    """Return (lat, lon) for an NYC address using the Nominatim geocoder."""
+    borough_name = BOROUGH_NAMES.get(int(borough_code), "New York")
+    query = f"{address_no} {street_name}, {borough_name}, NY"
+    url = "https://nominatim.openstreetmap.org/search"
+    params = {"q": query, "format": "json", "limit": 1}
+    headers = {"User-Agent": "nyc-property-risk-assessment/1.0"}
+    try:
+        r = requests.get(url, params=params, headers=headers, timeout=10)
+        r.raise_for_status()
+        results = r.json()
+        if not results:
+            print(f"Nominatim: no results for '{query}'")
             return None
-    else:
-        print(f"❌ API request failed with status code: {response.status_code}")
+        lat = float(results[0]["lat"])
+        lon = float(results[0]["lon"])
+        return lat, lon
+    except Exception as e:
+        print(f"Geocoding failed: {e}")
         return None
 
 # --- Get vulnerability by address ---
